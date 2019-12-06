@@ -43,22 +43,28 @@ defmodule Plug.Session do
   @cookie_opts [:domain, :max_age, :path, :secure, :http_only, :extra]
 
   def init(opts) do
+    IO.inspect(opts, label: "*** incoming opts", limit: :infinity)
     store = Plug.Session.Store.get(Keyword.fetch!(opts, :store))
     key = Keyword.fetch!(opts, :key)
     cookie_opts = Keyword.take(opts, @cookie_opts)
     store_opts = Keyword.drop(opts, [:store, :key] ++ @cookie_opts)
     store_config = store.init(store_opts)
 
-    %{
+    return = %{
       store: store,
       store_config: store_config,
       key: key,
       cookie_opts: cookie_opts
     }
+    IO.inspect(return, label: "*** return init value", limit: :infinity)
+    return
   end
 
   def call(conn, config) do
-    Conn.put_private(conn, :plug_session_fetch, fetch_session(config))
+    conn = Conn.put_private(conn, :plug_session_fetch, fetch_session(config))
+    fetch_session(config)
+    conn |> IO.inspect(label: "*** CONN AFTER CALL")
+    conn
   end
 
   defp fetch_session(config) do
